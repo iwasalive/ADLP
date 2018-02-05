@@ -1,0 +1,59 @@
+---
+- name: Ensure search service is running
+  win_service: 
+   name: WSearch
+   state: started
+  ignore_errors: yes 
+- name: Create temp directory
+  win_file: 
+    path: C:\Temp
+    state: directory
+    
+
+- name: Install IIS Web-Server with sub features and management tools
+  win_feature:
+    name: Web-Server
+    state: present
+    restart: False
+    include_sub_features: True
+    include_management_tools: True
+
+- name: Install .NET 3.5
+  win_feature:
+    name: Web-Asp-Net
+    state: present
+  ignore_errors: yes 
+
+- name: Install .NET 4.5
+  win_feature:
+    name: Web-Asp-Net45
+    state: present
+  ignore_errors: yes 
+  
+- name: Install SNMP
+  win_feature:
+    name: SNMP-Service
+    state: present
+    include_sub_features: True
+    include_management_tools: True
+  ignore_errors: yes 
+
+- name: Install WIF 3.5
+  win_feature:
+    name: Windows-Identity-Foundation
+    state: present
+  ignore_errors: yes 
+
+- name: Install Message Queuing Services
+  win_feature:
+    name: MSMQ-Server
+    state: present
+  ignore_errors: yes 
+
+- name: Install Windows Indexing Service
+  win_feature:
+    name: FS-Indexing-Service
+    state: present
+  ignore_errors: yes 
+
+
