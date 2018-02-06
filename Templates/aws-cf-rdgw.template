@@ -297,16 +297,16 @@
                                 }
                             },
                             "C:\\cfn\\scripts\\Unzip-Archive.ps1": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/Unzip-Archive.ps1"
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/Unzip-Archive.ps1"
                             },
                             "C:\\cfn\\modules\\AWSQuickStart.zip": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/AWSQuickStart.zip"
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/AWSQuickStart.zip"
                             },
                             "c:\\cfn\\scripts\\Initialize-RDGW.ps1": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/Initialize-RDGW.ps1"
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/Initialize-RDGW.ps1"
                             },
                             "c:\\cfn\\scripts\\Set-EIP.ps1": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/Set-EIP.ps1"
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/Set-EIP.ps1"
                             }
                         },
                         "services": {
@@ -436,7 +436,7 @@
                     "setupRemoting": {
                         "files": {
                             "C:\\cfn\\scripts\\setup-remoting.ps1": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/setup-remoting.ps1"
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/setup-remoting.ps1"
                             }
                         },
                         "commands": {
