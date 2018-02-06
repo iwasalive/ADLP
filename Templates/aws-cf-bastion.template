@@ -430,7 +430,7 @@
                     "bastionBootstrap": {
                         "files": {
                             "/tmp/bastion_bootstrap.sh": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/bastion_bootstrap.sh",
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/bastion_bootstrap.sh",
                                 "mode": "000550",
                                 "owner": "root",
                                 "group": "root"
@@ -468,7 +468,7 @@
                     "ansibleConfig": {
                         "files": {
                             "/tmp/ansibleSetup.sh": {
-                                "source": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Modules/ansibleInstall.sh",
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/ansibleInstall.sh",
                                 "mode": "000550",
                                 "owner": "root",
                                 "group": "root"

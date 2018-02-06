@@ -310,7 +310,7 @@
         "VPCStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Templates/aws-cf-vpc.template",
+                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-vpc.template",
                 "Parameters": {
                     "AvailabilityZones": {
                         "Fn::Join": [
@@ -349,7 +349,7 @@
             "DependsOn": "VPCStack",
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Templates/aws-cf-eBVM.template",
+                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-eBVM.template",
                 "Parameters": {
                     "AdminPassword": {
                         "Ref": "AdminPassword"
@@ -388,7 +388,7 @@
             "DependsOn": "VPCStack",
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Templates/aws-cf-eBVM.template",
+                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-eBVM.template",
                 "Parameters": {
                     "AdminPassword": {
                         "Ref": "AdminPassword"
@@ -430,7 +430,7 @@
             ],
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Templates/aws-cf-rdgw.template",
+                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-rdgw.template",
                 "Parameters": {
                     "AdminPassword": {
                         "Ref": "AdminPassword"
@@ -472,7 +472,7 @@
             ],
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
-                "TemplateURL": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Templates/aws-cf-bastion.template",
+                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-bastion.template",
                 "Parameters": {
                     "BastionAMIOS": {
                         "Ref": "BastionAMIOS"
