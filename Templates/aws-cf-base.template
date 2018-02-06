@@ -372,8 +372,8 @@
                     "WinInstanceType": {
                         "Ref": "eBVMInstanceType"
                     },
-                    "WinInstanceCIDR": {
-                        "Ref": "PublicSubnet1CIDR"
+                    "VPCCIDR": {
+                        "Ref": "VPCCIDR"
                     },
                     "VPCID": {
                         "Fn::GetAtt": [
@@ -411,8 +411,8 @@
                     "WinInstanceType": {
                         "Ref": "eBVMInstanceType"
                     },
-                    "WinInstanceCIDR": {
-                        "Ref": "PublicSubnet1CIDR"
+                    "VPCCIDR": {
+                        "Ref": "VPCCIDR"
                     },
                     "VPCID": {
                         "Fn::GetAtt": [

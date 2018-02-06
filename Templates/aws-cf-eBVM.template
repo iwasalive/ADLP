@@ -11,7 +11,7 @@
                     "Parameters": [
                         "VPCID",
                         "PrivateSubnetID",
-                        "WinInstanceCIDR"
+                        "VPCCIDR"
                     ]
                 },
                 {
@@ -53,8 +53,8 @@
                 "WinInstanceType": {
                     "default": "Windows Instance Type"
                 },
-                "WinInstanceCIDR": {
-                    "default": "Remote Desktop Gateway CIDR"
+                "VPCCIDR": {
+                    "default": "VPC CIDR"
                 },
                 "VPCID": {
                     "default": "VPC ID"
@@ -104,9 +104,9 @@
                 "t2.large"
             ]
         },
-        "WinInstanceCIDR": {
+        "VPCCIDR": {
             "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
-            "Description": "WinInstance CIDR Block for access to this windows instance",
+            "Description": "VPC CIDR Block for access to this windows instance",
             "Type": "String"
         },
         "VPCID": {
@@ -451,7 +451,7 @@
         "RemoteDesktopSG": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
-                "GroupDescription": "Enable RDP access from the private subnet",
+                "GroupDescription": "Enable RDP and WinRM access from the public subnet",
                 "VpcId": {
                     "Ref": "VPCID"
                 },
@@ -461,7 +461,23 @@
                         "FromPort": "3389",
                         "ToPort": "3389",
                         "CidrIp": {
-                            "Ref": "WinInstanceCIDR"
+                            "Ref": "VPCCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "5986",
+                        "ToPort": "5986",
+                        "CidrIp": {
+                            "Ref": "VPCCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "5985",
+                        "ToPort": "5985",
+                        "CidrIp": {
+                            "Ref": "VPCCIDR"
                         }
                     },
                     {
@@ -469,7 +485,7 @@
                         "FromPort": "-1",
                         "ToPort": "-1",
                         "CidrIp": {
-                            "Ref": "WinInstanceCIDR"
+                            "Ref": "VPCCIDR"
                         }
                     }
                 ]

@@ -24,7 +24,7 @@ IPs_eB=""
 IPs_CS=""
 
 # Variables - Ansible playbooks & roles
-file_pb_eb="$dir_playbooks/eb.yml"
+file_pb="$dir_playbooks/eb.yml"
 url_zip_playbook="https://s3.ca-central-1.amazonaws.com/suncor-adlp/Ansible/playbooks/playbooks.zip"
 url_zip_roles="https://s3.ca-central-1.amazonaws.com/suncor-adlp/Ansible/roles/roles.zip"
 
@@ -52,6 +52,10 @@ usage(){
   echo -e "--roleurl \t Overwrite the default location for the playbook ZIP file"
   echo -e "--ansibleuser \t User ID for Ansible on the windows server"
   echo -e "--ansiblepassword \t Password for Ansible on the windows server"
+}
+
+installGit(){
+  sudo yum install -y git-all
 }
 
 getIPs(){
@@ -108,7 +112,6 @@ buildInventory(){
   fi
 
 cat > $file_inv_ansible <<EOF
----
 [all]
 $IPs_eB
 $IPs_CS
@@ -131,9 +134,7 @@ ansible_user: $ansible_user
 ansible_password: $ansible_pass
 ansible_port: 5986
 ansible_connection: winrm
-#ansible_winrm_scheme: https
-#ansible_winrm_transport: ntlm
-ansible_winrm_server_cert_validation: ignore
+#ansible_winrm_transport: basic
 EOF
 
 }
@@ -156,6 +157,12 @@ copyRoles(){
   wget -P $dir_roles $url_zip_roles -O "$dir_roles/$filename"
   #unpack file to roles directory
   unzip -d $dir_roles -o "$dir_roles/$filename"
+}
+
+# Runs the playbooks
+runPlaybooks(){
+  cd $dir_ansible
+  ansible-playbook $file_pb
 }
 
 ############################### End Functions Definition
@@ -201,9 +208,11 @@ while true; do
 done
 
 # run script
+installGit
 createFolder
 buildAnsibleConfig
 buildInventory
 buildVarsFiles
 copyPlaybooks
 copyRoles
+runPlaybooks

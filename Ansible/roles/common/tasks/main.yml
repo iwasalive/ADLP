@@ -1,17 +1,15 @@
 ---
-- name: Install chocolate 
-  win_chocolatey: 
+- name: Install chocolate
+  win_chocolatey:
     name: '{{ item }}'
     state: present
   with_items:
    - git
    - googlechrome
    - jre8
-   - python 
    - sikulix
    - notepadplusplus.install
    - git.install
-   - powershell
    - dotnet4.5
    - conemu
    - awscli
@@ -21,4 +19,3 @@
   async: 60
   poll: 10
   ignore_errors: yes
-
