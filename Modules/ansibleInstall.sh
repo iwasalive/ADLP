@@ -140,7 +140,7 @@ ansible_user: $ansible_user
 ansible_password: $ansible_pass
 ansible_port: 5986
 ansible_connection: winrm
-#ansible_winrm_transport: basic
+ansible_winrm_server_cert_validation: ignore
 EOF
 
 }
@@ -218,6 +218,6 @@ installGit
 #createFolder
 buildAnsibleConfig
 buildInventory
-#buildVarsFiles
+buildVarsFiles
 #copyRoles
 runPlaybooks
