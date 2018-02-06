@@ -1,7 +1,7 @@
 ---
-- hosts: test
+- hosts: all
   gather_facts: no
-  roles: 
+  roles:
    - {role: "common", tags: "common"}
    - {role: "eb", tags: "eb"}
    - {role: "db", tags: "db"}
