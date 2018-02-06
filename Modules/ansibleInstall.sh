@@ -9,7 +9,8 @@
 ############################### Variable Definition
 
 # Variables - Ansible folders
-dir_ansible="$HOME/ansible"
+dir_git="$HOME/git"
+dir_ansible="$dir_git/Ansible"
 dir_inventory="$dir_ansible/inventory"
 dir_groupvars="$dir_inventory/group_vars"
 dir_playbooks="$dir_ansible/playbooks"
@@ -55,7 +56,12 @@ usage(){
 }
 
 installGit(){
+  # ensure git is installed
   sudo yum install -y git-all
+  # add github to known hosts
+  sudo ssh-keyscan github.com >> ~/.ssh/known_hosts
+  # pull git repo
+  sudo git clone https://github.com/iwasalive/ADLP $dir_git
 }
 
 getIPs(){
@@ -209,10 +215,9 @@ done
 
 # run script
 installGit
-createFolder
+#createFolder
 buildAnsibleConfig
 buildInventory
-buildVarsFiles
-copyPlaybooks
-copyRoles
+#buildVarsFiles
+#copyRoles
 runPlaybooks
