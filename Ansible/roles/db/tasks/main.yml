@@ -1,25 +1,9 @@
 ---
 - name: Move all db files to target
-  win_copy: 
+  win_copy:
     src: "{{ item }}"
     dest: C:\Temp\
   with_items:
     - sql-setup.ps1
     - sql-config.ini
     - sql-server-2017.exe
-
-- name: Create a task to run a PowerShell script
-  win_scheduled_task:
-    name: Install SQL
-    description: Run a PowerShell script
-    executable: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
-    arguments: -ExecutionPolicy Unrestricted -NonInteractive -File C:\Temp\sql-setup.ps1
-    time: 8:10pm
-    frequency: once
-    state: present
-    enabled: yes
-    runlevel: highest
-
-- name: Wait for SQL Server to be installed before continuing
-  wait_for: 
-    

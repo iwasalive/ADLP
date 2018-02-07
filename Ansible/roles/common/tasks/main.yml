@@ -16,6 +16,6 @@
    - sql-server-management-studio
    - psexec
    - openssh
-  async: 60
+  async: 300
   poll: 10
   ignore_errors: yes

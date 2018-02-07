@@ -37,6 +37,8 @@ ansible_pass=""
 # General Variables
 ipPattern="^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$"
 awsRegion="ca-central-1"
+dir_log="$HOME/var/log"
+playbookLog="$dir_log/ansibleInstall_runPlaybook.log"
 
 ############################### End Variable Definition
 #
@@ -99,6 +101,7 @@ cat >> $file_config_ansible <<EOF
 inventory = $file_inv_ansible
 roles_path = $dir_roles
 retry_files_enabled = False
+log_path=$dir_log
 EOF
 }
 
@@ -168,7 +171,7 @@ copyRoles(){
 # Runs the playbooks
 runPlaybooks(){
   cd $dir_ansible
-  ansible-playbook $file_pb
+  ansible-playbook -vvvv file_pb > $playbookLog
 }
 
 ############################### End Functions Definition
