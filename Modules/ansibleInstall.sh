@@ -25,7 +25,7 @@ IPs_eB=""
 IPs_CS=""
 
 # Variables - Ansible playbooks & roles
-file_pb="$dir_playbooks/eb.yml"
+file_pb="playbooks/eb.yml"
 url_zip_playbook="https://s3.ca-central-1.amazonaws.com/suncor-adlp/Ansible/playbooks/playbooks.zip"
 url_zip_roles="https://s3.ca-central-1.amazonaws.com/suncor-adlp/Ansible/roles/roles.zip"
 
