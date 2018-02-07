@@ -103,7 +103,7 @@
                 "m3.large",
                 "m4.large"
             ],
-            "Default": "t2.micro",
+            "Default": "m4.large",
             "Description": "Amazon EC2 instance type for the NAT instances. This is used only if the region does not support NAT gateways.",
             "Type": "String"
         },

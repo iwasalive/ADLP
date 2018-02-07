@@ -108,9 +108,14 @@
             "AllowedValues": [
                 "t2.nano",
                 "t2.micro",
-                "t2.small"
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m3.medium",
+                "m3.large",
+                "m4.large"
             ],
-            "Default": "t2.micro",
+            "Default": "m4.large",
             "Description": "Amazon EC2 instance type for the bastion instances",
             "Type": "String"
         },
@@ -171,6 +176,7 @@
         "WinAdminPassword": {
             "Description": "Password for the administrative account. Must be at least 8 characters containing letters, numbers and symbols",
             "Type": "String",
+            "Default": "P@ssw0rd!",
             "MinLength": "8",
             "MaxLength": "32",
             "AllowedPattern": "(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*",
@@ -179,7 +185,7 @@
         "WinAdminUser": {
             "Description": "User name for the new local administrator account",
             "Type": "String",
-            "Default": "StackAdmin",
+            "Default": "Admin",
             "MinLength": "5",
             "MaxLength": "25",
             "AllowedPattern": "[a-zA-Z0-9]*"
@@ -437,7 +443,7 @@
                             }
                         },
                         "commands": {
-                            "b-bootstrap": {
+                            "a-bootstrap": {
                                 "command": {
                                     "Fn::Join": [
                                         "",
