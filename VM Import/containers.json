@@ -1,0 +1,10 @@
+[
+  {
+    "Description": "First disk",
+    "Format": "vmdk",
+    "UserBucket": {
+        "S3Bucket": "suncor-adlp",
+        "S3Key": "VM_Images/WIN-BINM6D1SA2K.vmdk"
+    }
+  }
+]

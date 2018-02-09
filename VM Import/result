@@ -1,0 +1,26 @@
+{
+    "Status": "active",
+    "LicenseType": "BYOL",
+    "Description": "Windows Suncor 10.5",
+    "SnapshotDetails": [
+        {
+            "UserBucket": {
+                "S3Bucket": "suncor-adlp",
+                "S3Key": "VM_Images/WIN-BINM6D1SA2K-0.vmdk"
+            },
+            "DiskImageSize": 0.0,
+            "Format": "VMDK"
+        },
+        {
+            "UserBucket": {
+                "S3Bucket": "suncor-adlp",
+                "S3Key": "VM_Images/WIN-BINM6D1SA2K.vmdk"
+            },
+            "DiskImageSize": 0.0,
+            "Format": "VMDK"
+        }
+    ],
+    "Progress": "2",
+    "StatusMessage": "pending",
+    "ImportTaskId": "import-ami-ffvylv23"
+}
