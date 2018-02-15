@@ -171,7 +171,7 @@ copyRoles(){
 # Runs the playbooks
 runPlaybooks(){
   cd $dir_ansible
-  ansible-playbook -vvvv file_pb > $playbookLog
+  ansible-playbook -vvvv $file_pb > $playbookLog
 }
 
 ############################### End Functions Definition

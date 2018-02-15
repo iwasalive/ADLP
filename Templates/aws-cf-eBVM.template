@@ -145,10 +145,10 @@
     "Mappings": {
         "AWSAMIRegionMap": {
             "AMI": {
-                "WS2012R2": "Windows_Server-2012-R2_RTM-English-64Bit-Base-2018.01.12"
+                "WS2008R2": "Windows_Server-2008-R2"
             },
             "ca-central-1": {
-                "WS2012R2": "ami-41ab2e25"
+                "WS2008R2": "ami-a00185c4"
             }
         }
     },
@@ -405,7 +405,7 @@
                         {
                             "Ref": "AWS::Region"
                         },
-                        "WS2012R2"
+                        "WS2008R2"
                     ]
                 },
                 "SecurityGroups": [

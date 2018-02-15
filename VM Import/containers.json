@@ -1,10 +1,10 @@
 [
   {
-    "Description": "First disk",
-    "Format": "vmdk",
+    "Description": "Windows 2008 OVA",
+    "Format": "ova",
     "UserBucket": {
-        "S3Bucket": "suncor-adlp",
-        "S3Key": "VM_Images/WIN-BINM6D1SA2K.vmdk"
+      "S3Bucket": "suncor-adlp",
+      "S3Key": "VM_Images/suncor.ova"
     }
   }
 ]
