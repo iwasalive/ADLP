@@ -44,6 +44,30 @@ playbookLog="$dir_log/ansibleInstall_runPlaybook.log"
 #
 ############################### Functions Definition
 
+echoProcessStatus(){
+  local lineLen=60
+  local statusTxt=$1
+  local functionTxt=$2
+  local numStarsStart=$(($(($lineLen-${#statusTxt}-${#functionTxt}-4))/2))
+  local numStarsEnd=$(($numStarsStart+$(($(($lineLen-${#statusTxt}-${#functionTxt}-4))%2))))
+  for i in `seq 1 $lineLen`; do
+    printf "*"
+  done
+  printf "\n"
+  for i in `seq 1 $numStarsStart`; do
+    printf "*"
+  done
+  printf " $statusTxt: $functionTxt "
+  for i in `seq 1 $numStarsEnd`; do
+    printf "*"
+  done
+  printf "\n"
+  for i in `seq 1 $lineLen`; do
+    printf "*"
+  done
+  printf "\n"
+}
+
 usage(){
   echo "$0 <usage>"
   echo " "
@@ -58,20 +82,24 @@ usage(){
 }
 
 installGit(){
+  echoProcessStatus "Begin" "installGit"
   # ensure git is installed
   sudo yum install -y git-all
   # add github to known hosts
   sudo ssh-keyscan github.com >> ~/.ssh/known_hosts
   # pull git repo
   sudo git clone https://github.com/iwasalive/ADLP $dir_git
+  echoProcessStatus "Complete" "installGit"
 }
 
 getIPs(){
-local AS_eB_InstanceID=$(aws autoscaling describe-auto-scaling-instances --region ca-central-1 --output text --query "AutoScalingInstances[?AutoScalingGroupName=='$AS_eB'].InstanceId")
-IPs_eB=$(aws ec2 describe-instances --region ca-central-1 --output text --instance-ids $AS_eB_InstanceID --query Reservations[].Instances[].PrivateIpAddress)
+  echoProcessStatus "Begin" "getIPs"
+  local AS_eB_InstanceID=$(aws autoscaling describe-auto-scaling-instances --region ca-central-1 --output text --query "AutoScalingInstances[?AutoScalingGroupName=='$AS_eB'].InstanceId")
+  IPs_eB=$(aws ec2 describe-instances --region ca-central-1 --output text --instance-ids $AS_eB_InstanceID --query Reservations[].Instances[].PrivateIpAddress)
 
-local AS_CS_InstanceID=$(aws autoscaling describe-auto-scaling-instances --region ca-central-1 --output text --query "AutoScalingInstances[?AutoScalingGroupName=='$AS_CS'].InstanceId")
-IPs_CS=$(aws ec2 describe-instances --region ca-central-1 --output text --instance-ids $AS_CS_InstanceID --query Reservations[].Instances[].PrivateIpAddress)
+  local AS_CS_InstanceID=$(aws autoscaling describe-auto-scaling-instances --region ca-central-1 --output text --query "AutoScalingInstances[?AutoScalingGroupName=='$AS_CS'].InstanceId")
+  IPs_CS=$(aws ec2 describe-instances --region ca-central-1 --output text --instance-ids $AS_CS_InstanceID --query Reservations[].Instances[].PrivateIpAddress)
+  echoProcessStatus "Complete" "getIPs"
 }
 
 # Creates the basic folder structure for Ansible
@@ -96,6 +124,7 @@ validateIP(){
 }
 
 buildAnsibleConfig(){
+  echoProcessStatus "Begin" "buildAnsibleConfig"
 cat >> $file_config_ansible <<EOF
 [defaults]
 inventory = $file_inv_ansible
@@ -103,9 +132,11 @@ roles_path = $dir_roles
 retry_files_enabled = False
 log_path=$dir_log
 EOF
+  echoProcessStatus "Complete" "buildAnsibleConfig"
 }
 
 buildInventory(){
+  echoProcessStatus "Begin" "buildInventory"
   getIPs
 
   if [[ "$AS_eB" == "" ]]; then
@@ -131,12 +162,12 @@ $IPs_eB
 [db]
 $IPs_CS
 EOF
-
+  echoProcessStatus "Complete" "buildInventory"
 }
 
 # builds the variable files
 buildVarsFiles(){
-
+  echoProcessStatus "Begin" "buildVarsFiles"
 #GroupVars all.yml file
 cat > $file_inv_groupvars_all <<EOF
 ansible_user: $ansible_user
@@ -145,33 +176,39 @@ ansible_port: 5986
 ansible_connection: winrm
 ansible_winrm_server_cert_validation: ignore
 EOF
-
+  echoProcessStatus "Complete" "buildVarsFiles"
 }
 
 # Copies and unpacks the playbooks
 #
 copyPlaybooks(){
+  echoProcessStatus "Begin" "copyPlaybooks"
   #download file
   local filename=$(basename "$url_zip_playbook")
   wget -P $dir_playbooks $url_zip_playbook -O "$dir_playbooks/$filename"
   #unpack file to playbook directory
   unzip -d $dir_playbooks -o "$dir_playbooks/$filename"
+  echoProcessStatus "Complete" "copyPlaybooks"
 }
 
 # Copies and unpacks the roles folders
 #
 copyRoles(){
+  echoProcessStatus "Begin" "copyRoles"
   #download zip file
   local filename=$(basename "$url_zip_roles")
   wget -P $dir_roles $url_zip_roles -O "$dir_roles/$filename"
   #unpack file to roles directory
   unzip -d $dir_roles -o "$dir_roles/$filename"
+  echoProcessStatus "Complete" "copyRoles"
 }
 
 # Runs the playbooks
 runPlaybooks(){
+  echoProcessStatus "Begin" "runPlaybooks"
   cd $dir_ansible
   ansible-playbook -vvvv $file_pb > $playbookLog
+  echoProcessStatus "Complete" "runPlaybooks"
 }
 
 ############################### End Functions Definition
@@ -218,6 +255,7 @@ done
 
 # run script
 installGit
+
 #createFolder
 buildAnsibleConfig
 buildInventory
