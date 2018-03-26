@@ -68,14 +68,6 @@
                 },
                 {
                     "Label": {
-                        "default": "VPN Configuration"
-                    },
-                    "Parameters": [
-                        "VPNInstanceType"
-                    ]
-                },
-                {
-                    "Label": {
                         "default": "Other AWS Resource"
                     },
                     "Parameters": [
@@ -114,9 +106,6 @@
                 },
                 "RDGWInstanceType": {
                     "default": "Remote Desktop Gateway Instance Type"
-                },
-                "VPNInstanceType": {
-                    "default": "OpenVPN Instance Type"
                 },
                 "RemoteAccessCIDR": {
                     "default": "Allowed Remote Desktop Gateway External Access CIDR"
@@ -226,21 +215,6 @@
             "Description": "Amazon EC2 instance type for Remote Desktop Gateway instances",
             "Type": "String",
             "Default": "t2.micro",
-            "AllowedValues": [
-                "t2.nano",
-                "t2.micro",
-                "t2.small",
-                "t2.medium",
-                "t2.large",
-                "m3.medium",
-                "m3.large",
-                "m4.large"
-            ]
-        },
-        "VPNInstanceType": {
-            "Description": "Amazon EC2 instance type for VPN instance",
-            "Type": "String",
-            "Default": "t2.nano",
             "AllowedValues": [
                 "t2.nano",
                 "t2.micro",
@@ -381,7 +355,7 @@
                     "PrivateSubnetID": {
                       "Fn::GetAtt": [
                           "VPCStack",
-                          "Outputs.PrivateSubnetID"
+                          "Outputs.PrivateSubnet2ID"
                       ]
                     },
                     "WinInstanceType": {
@@ -420,7 +394,7 @@
                     "PrivateSubnetID": {
                       "Fn::GetAtt": [
                           "VPCStack",
-                          "Outputs.PrivateSubnetID"
+                          "Outputs.PrivateSubnet2ID"
                       ]
                     },
                     "WinInstanceType": {
@@ -459,17 +433,17 @@
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
-                    "PrivateSubnetID": {
+                    "PublicSubnetID": {
                         "Fn::GetAtt": [
                             "VPCStack",
-                            "Outputs.PrivateSubnetID"
+                            "Outputs.PublicSubnet1ID"
                         ]
                     },
                     "RDGWInstanceType": {
                         "Ref": "RDGWInstanceType"
                     },
                     "RDGWCIDR": {
-                        "Ref": "PublicSubnetCIDR"
+                        "Ref": "RemoteAccessCIDR"
                     },
                     "VPCID": {
                         "Fn::GetAtt": [
@@ -510,14 +484,14 @@
                     "KeyPairName": {
                         "Ref": "KeyPairName"
                     },
-                    "PrivateSubnetID": {
+                    "PublicSubnetID": {
                         "Fn::GetAtt": [
                             "VPCStack",
-                            "Outputs.PrivateSubnetID"
+                            "Outputs.PublicSubnet1ID"
                         ]
                     },
                     "RemoteAccessCIDR": {
-                        "Ref": "PublicSubnetCIDR"
+                        "Ref": "RemoteAccessCIDR"
                     },
                     "VPCID": {
                       "Fn::GetAtt": [
@@ -542,36 +516,6 @@
                           "CSVMStack",
                           "Outputs.ASGroupID"
                       ]
-                    }
-                }
-            }
-        },
-        "OpenVPN": {
-            "DependsOn": "VPCStack",
-            "Type": "AWS::CloudFormation::Stack",
-            "Properties": {
-                "TemplateURL": "https://s3.ca-central-1.amazonaws.com/suncor-adlp/CloudFormation/Templates/aws-cf-openvpn.template",
-                "Parameters": {
-                    "InstanceType": {
-                        "Ref": "VPNInstanceType"
-                    },
-                    "KeyPairName": {
-                        "Ref": "KeyPairName"
-                    },
-                    "PublicSubnetID": {
-                        "Fn::GetAtt": [
-                            "VPCStack",
-                            "Outputs.PublicSubnetID"
-                        ]
-                    },
-                    "VPNSetupCIDR": {
-                        "Ref": "RemoteAccessCIDR"
-                    },
-                    "VPCID": {
-                        "Fn::GetAtt": [
-                            "VPCStack",
-                            "Outputs.VPCID"
-                        ]
                     }
                 }
             }

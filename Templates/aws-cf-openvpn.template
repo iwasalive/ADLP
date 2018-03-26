@@ -1,0 +1,617 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "OpenVPN",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Network Configuration"
+                    },
+                    "Parameters": [
+                        "VPCID",
+                        "PublicSubnetID",
+                        "VPNSetupCIDR"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Amazon EC2 Configuration"
+                    },
+                    "Parameters": [
+                        "KeyPairName",
+                        "InstanceType"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "KeyPairName": {
+                    "default": "Key Pair Name"
+                },
+                "PublicSubnetID": {
+                    "default": "Public Subnet ID"
+                },
+                "InstanceType": {
+                    "default": "OpenVPN Instance Type"
+                },
+                "VPNSetupCIDR": {
+                    "default": "VPN Setup CIDR"
+                },
+                "VPCID": {
+                    "default": "VPC ID"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "KeyPairName": {
+            "Description": "Public/private key pairs allow you to securely connect to your instance after it launches",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "PublicSubnetID": {
+            "Description": "ID of the private subnet that you want to provision this instance into",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "InstanceType": {
+            "Description": "Amazon EC2 instance type for the first Remote Desktop Gateway instance",
+            "Type": "String",
+            "Default": "t2.nano",
+            "AllowedValues": [
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m3.medium",
+                "m3.large",
+                "m4.large"
+            ]
+        },
+        "VPNSetupCIDR": {
+            "AllowedPattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$",
+            "Description": "VPC CIDR Block for access to setup the VPN",
+            "Default": "0.0.0.0/0",
+            "Type": "String"
+        },
+        "VPCID": {
+            "Description": "ID of the VPC (e.g., vpc-0343606e)",
+            "Type": "AWS::EC2::VPC::Id"
+        }
+    },
+    "Rules": {
+        "SubnetsInVPC": {
+            "Assertions": [
+                {
+                    "Assert": {
+                        "Fn::EachMemberIn": [
+                            {
+                                "Fn::ValueOfAll": [
+                                    "AWS::EC2::Subnet::Id",
+                                    "VpcId"
+                                ]
+                            },
+                            {
+                                "Fn::RefAll": "AWS::EC2::VPC::Id"
+                            }
+                        ]
+                    },
+                    "AssertDescription": "All subnets must in the VPC"
+                }
+            ]
+        }
+    },
+    "Mappings": {
+        "AWSAMIRegionMap": {
+            "AMI": {
+                "AMZNLINUXHVM": "amzn-ami-hvm-2017.09.1.20180108-x86_64-gp2",
+                "CENTOS7HVM": "CentOS Linux 7 x86_64 HVM EBS 1708_11.01-b7ee8a69-ee97-4a49-9e68-afaee216db2e-ami-95096eef.4",
+                "US1404HVM": "ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-20180110",
+                "US1604HVM": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180109"
+            },
+            "ca-central-1": {
+                "AMZNLINUXHVM": "ami-61f97c05",
+                "CENTOS7HVM": "ami-b111aad5",
+                "US1404HVM": "ami-ccaf2aa8",
+                "US1604HVM": "ami-f0870294"
+            }
+        },
+    "Resources": {
+        "VPNInstanceHostRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "Policies": [
+                    {
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "ec2:AssociateAddress",
+                                        "ec2:DescribeAddresses"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ],
+                                    "Effect": "Allow"
+                                }
+                            ]
+                        },
+                        "PolicyName": "VPNInstance-eip-policy"
+                    }
+                ],
+                "Path": "/",
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                        {
+                            "Action": [
+                                "sts:AssumeRole"
+                            ],
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Effect": "Allow"
+                        }
+                    ],
+                    "Version": "2012-10-17"
+                }
+            }
+        },
+        "VPNInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Roles": [
+                    {
+                        "Ref": "VPNInstanceHostRole"
+                    }
+                ],
+                "Path": "/"
+            }
+        },
+        "VPNInstanceAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "LaunchConfigurationName": {
+                    "Ref": "VPNInstanceLaunchConfiguration"
+                },
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PublicSubnetID"
+                    }
+                ],
+                "MinSize": "1",
+                "MaxSize": "1",
+                "Cooldown": "300",
+                "DesiredCapacity": "1",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "openvpn",
+                        "PropagateAtLaunch": "true"
+                    }
+                ]
+            },
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Count": "1",
+                    "Timeout": "PT30M"
+                }
+            }
+        },
+        "VPNInstanceLaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "config": [
+                          "configure_cfn",
+                          "install_software",
+                          "generate_secrets",
+                          "generate_client",
+                          "configure_server",
+                          "upload_files"
+                        ]
+                    },
+                    "install_software": {
+                      "packages": {
+                        "yum": {
+                          "openvpn":[
+
+                          ]
+                        }
+                      },
+                      "commands": {
+                        "01_Install_Software_install_easyrsa": {
+                          "command": "wget -qO- https://github.com/OpenVPN/easy-rsa/releases/download/2.2.2/EasyRSA-2.2.2.tgz | tar xvz -C /opt/"
+                        },
+                        "02_Install_Software_copy_easyras": {
+                          "command": "cp -R /opt/EasyRSA-2.2.2 /opt/easy-rsa"
+                        }
+                      }
+                    },
+                    "generate_secrets": {
+                      "commands": {
+                        "01_generate_secrets_clean_keysdir": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/clean-all",
+                          "command": "source /opt/easy-rsa/vars;/opt/easy-rsa/clean-all"
+                        },
+                        "02_generate_secrets_update_build-ca": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-ca",
+                          "command": "sed -i 's/--interact//g' /opt/easy-rsa/build-ca"
+                        },
+                        "03_generate_secrets_run_build-ca": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-ca",
+                          "command": "source /opt/easy-rsa/vars;/opt/easy-rsa/build-ca"
+                        },
+                        "04_generate_secrets_run_build-dh": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-dh",
+                          "command": "source /opt/easy-rsa/vars;/opt/easy-rsa/build-dh"
+                        },
+                        "05_generate_secrets_update_build-key-server": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-key-server",
+                          "command": "sed -i 's/--interact//g' /opt/easy-rsa/build-key-server"
+                        },
+                        "06_generate_secrets_run_build-key-server": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-key-server",
+                          "command": "source /opt/easy-rsa/vars;/opt/easy-rsa/build-key-server server"
+                        },
+                        "07_generate_secrets_statictlssecret": {
+                          "cwd": "/opt/easy-rsa/keys",
+                          "command": "openvpn --genkey --secret statictlssecret.key"
+                        }
+                      }
+                    },
+                    "generate_client": {
+                      "files": {
+                          "/opt/easy-rsa/openvpn_client.conf": {
+                            "content": {
+                              "Fn:Join": [
+                                "client\n",
+                                "dev tun\n",
+                                "proto udp\n",
+                                "remote \n",
+                                {
+                                  "Ref": "myEIP"
+                                },
+                                {
+                                  "Ref": "OpenVPNPort"
+                                },
+                                "ca ca.crt\n",
+                                "cert clientuser.crt\n",
+                                "key clientuser.key\n",
+                                "tls-client\n",
+                                "tls-auth statictlssecret.key 1\n",
+                                "tls-version-min 1.2\n",
+                                "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
+                                "cipher AES-256-CBC\n",
+                                "auth SHA512\n",
+                                "resolv-retry infinite\n",
+                                "auth-retry none\n",
+                                "nobind\n",
+                                "persist-key\n",
+                                "persist-tun\n",
+                                "ns-cert-type server\n",
+                                "comp-lzo\n",
+                                "verb 3"
+                              ]
+                            },
+                            "mode": "000700",
+                            "owner": "root",
+                            "group": "root"
+                        },
+                        "/opt/easy-rsa/gen_ovpn_profile.sh": {
+                            "content": {
+                              "Fn:Join": [
+                                "(cat /opt/easy-rsa/openvpn_client.conf\n",
+                                "echo '<key>'\n",
+                                "cat keys/clientuser.key\n",
+                                "echo '</key>'\n",
+                                "echo '<cert>'\n",
+                                "cat keys/clientuser.crt\n",
+                                "echo '</cert>'\n",
+                                "echo '<ca>'\n",
+                                "cat keys/ca.crt\n",
+                                "echo '</ca>'\n",
+                                ") > /opt/easy-rsa/keys/openvpn_clientuser.ovpn"
+                              ]
+                            },
+                            "mode": "000700",
+                            "owner": "root",
+                            "group": "root"
+                        }
+                      },
+                      "commands": {
+                        "01_generate_client_update_build-key": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-key",
+                          "command": "sed -i 's/--interact//g' /opt/easy-rsa/build-key"
+                        },
+                        "02_generate_client_run_build-key": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/build-key",
+                          "command": "source /opt/easy-rsa/vars;/opt/easy-rsa/build-key clientuser"
+                        },
+                        "03_generate_client_generate_ovpn_profile": {
+                          "cwd": "/opt/easy-rsa",
+                          "test": "test -e /opt/easy-rsa/gen_ovpn_profile.sh",
+                          "command": "/opt/easy-rsa/gen_ovpn_profile.sh"
+                        }
+                      }
+                    },
+                    "configure_server": {
+                      "files": {
+                        "/opt/openvpn/server.conf": {
+                          "content": {
+                            "Fn::Join": [
+                              "",
+                              "port ",
+                              {
+                                "Ref": "OpenVPNPort"
+                              },
+                              "proto udp\n",
+                              "dev tun\n",
+                              "server 172.16.0.0 255.255.252.0\n",
+                              "push \"redirect-gateway def1\"\n",
+                              "ca /opt/easy-rsa/keys/ca.crt\n",
+                              "cert /opt/easy-rsa/keys/server.crt\n",
+                              "key /opt/easy-rsa/keys/server.key\n",
+                              "dh /opt/easy-rsa/keys/dh2048.pem\n",
+                              "tls-server\n",
+                              "tls-auth /opt/easy-rsa/keys/statictlssecret.key 0\n",
+                              "tls-version-min 1.2\n",
+                              "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
+                              "cipher AES-256-CBC\n",
+                              "auth SHA512\n",
+                              "ifconfig-pool-persist ipp.txt\n",
+                              "keepalive 10 120\n",
+                              "ping-timer-rem\n",
+                              "comp-lzo\n",
+                              "persist-key\n",
+                              "persist-tun\n",
+                              "status openvpn-status.log\n",
+                              "log-append /var/log/openvpn.log\n",
+                              "verb 3\n",
+                              "max-clients 100\n",
+                              "user nobody\n",
+                              "group nobody"
+                            ]
+                          },
+                          "mode": "000644",
+                          "owner": "root",
+                          "group": "root"
+                        }
+                      },
+                      "commands": {
+                        "01_configure_server_sysctl_ipforward": {
+                          "command": "echo net.ipv4.ip_forward = 1 >> /etc/sysctl.conf"
+                        },
+                        "02_configure_server_sysctl_reload": {
+                          "command": "sysctl -p"
+                        },
+                        "03_configure_server_iptables_nat": {
+                          "command": "iptables -t nat -A POSTROUTING -s 172.16.0.0/22 -o eth0 -j MASQUERADE"
+                        },
+                        "04_configure_server_update_config": {
+                          "command": "cp -rf /opt/openvpn/server.conf /etc/openvpn/server.conf"
+                        },
+                        "05_configure_server_openvpn_start": {
+                          "command": "service openvpn start"
+                        }
+                      }
+                    },
+                    "upload_files": {
+                      "commands": {
+                        "01_upload_files_zipfiles": {
+                            "cwd": "/opt/easy-rsa/keys",
+                            "command": "zip openVPNClientFiles.zip ca.crt statictlssecret.key clientuser.key clientuser.crt openvpn_clientuser.ovpn"
+                        },
+                        "02_upload_files_s3cp_openVPNClientFiles": {
+                          "cwd": "/opt/easy-rsa/keys",
+                          "command": {
+                            "Fn:Join": [
+                              "",
+                              "aws s3 cp openVPNClientFiles.zip s3://",
+                              {
+                                "Ref": "myS3Bucket"
+                              },
+                              "/client/openVPNClientFiles.zip"
+                            ]
+                          }
+                        },
+                        "03_upload_files_s3cp_cfn_init_log": {
+                          "cwd": "/var/log",
+                          "test": "test -e /var/log/cfn-init.log",
+                          "command": {
+                            "Fn:Join": [
+                              "",
+                              "aws s3 cp /var/log/cfn-init.log s3://",
+                              {
+                                "Ref": "myS3Bucket"
+                              },
+                              "/log/genSecrets_cfn-init.log"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "setup": {
+                        "files": {
+                            "/tmp/openVPNConfig.sh": {
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/openVPNConfig.sh",
+                                "mode": "000550",
+                                "owner": "root",
+                                "group": "root"
+                            }
+                        },
+                        "commands": {
+                            "a-setup": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "./tmp/openVPNConfig.sh",
+                                            " --eBAutoScalingGroup ",
+                                            {
+                                                "Ref": "eBASGroupID"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSAMIRegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMZNLINUXHVM"
+                    ]
+                },
+                "AssociatePublicIpAddress": true,
+                "SourceDestCheck": false,
+                "SecurityGroups": [
+                    {
+                        "Ref": "VPNSG"
+                    }
+                ],
+                "IamInstanceProfile": {
+                    "Ref": "VPNInstanceProfile"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "8",
+                            "VolumeType": "gp2"
+                        }
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyPairName"
+                },
+                "UserData": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "#!/bin/bash\n",
+                            "export PATH=$PATH:/usr/local/bin\n",
+                            "which pip &> /dev/null\n",
+                            "if [ $? -ne 0 ] ; then\n",
+                            "    echo \"PIP NOT INSTALLED\"\n",
+                            "    [ `which yum` ] && $(yum install -y epel-release; yum install -y python-pip) && echo \"PIP INSTALLED\"\n",
+                            "    [ `which apt-get` ] && apt-get -y update && apt-get -y install python-pip && echo \"PIP INSTALLED\"\n",
+                            "fi\n",
+                            "pip install --upgrade pip &> /dev/null\n",
+                            "pip install awscli --ignore-installed six &> /dev/null\n",
+                            "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                            "sudo yum install tree -y\n",
+                            "sudo yum update\n",
+                            "sudo yum install python-pip git libffi-dev libssl-dev -y\n",
+                            "sudo pip install pywinrm\n",
+                            "\"\n",
+                            "cfn-init -v -c config --stack ",
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            " --resource VPNInstanceLaunchConfiguration --region ",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "\n",
+                            "cfn-signal -e $? --stack ",
+                            {
+                                "Ref": "AWS::StackName"
+                            },
+                            " --resource VPNInstanceAutoScalingGroup --region ",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            "\n"
+                        ]
+                    ]
+                }
+            }
+            }
+        },
+        "VPNSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable access for setup",
+                "VpcId": {
+                    "Ref": "VPCID"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "VPNSetupCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "943",
+                        "ToPort": "943",
+                        "CidrIp": {
+                            "Ref": "VPNSetupCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": {
+                            "Ref": "VPNSetupCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "udp",
+                        "FromPort": "1194",
+                        "ToPort": "1194",
+                        "CidrIp": {
+                            "Ref": "VPNSetupCIDR"
+                        }
+                    },
+                    {
+                        "IpProtocol": "icmp",
+                        "FromPort": "-1",
+                        "ToPort": "-1",
+                        "CidrIp": {
+                            "Ref": "VPNSetupCIDR"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "VPNInstanceSGID": {
+            "Value": {
+                "Ref": "VPNSG"
+            },
+            "Description": "VPN Instance Group ID"
+        },
+        "ASGroupID": {
+            "Value": {
+                "Ref": "VPNInstanceAutoScalingGroup"
+            },
+            "Description": "Returns the ID of the AutoScalingGroup "
+        }
+    }
+}

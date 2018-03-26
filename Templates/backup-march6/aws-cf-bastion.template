@@ -10,7 +10,7 @@
                     },
                     "Parameters": [
                         "VPCID",
-                        "PrivateSubnetID",
+                        "PublicSubnetID",
                         "RemoteAccessCIDR"
                     ]
                 },
@@ -69,8 +69,8 @@
                 "KeyPairName": {
                     "default": "Key Pair Name"
                 },
-                "PrivateSubnetID": {
-                    "default": "Private Subnet ID"
+                "PublicSubnetID": {
+                    "default": "Public Subnet 1 ID"
                 },
                 "RemoteAccessCIDR": {
                     "default": "Allowed Bastion External Access CIDR"
@@ -150,8 +150,8 @@
             "Description": "Enter a Public/private key pair. If you do not have one in this region, please create it before continuing",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
-        "PrivateSubnetID": {
-            "Description": "ID of the private subnet that you want to provision the bastion into (e.g., subnet-a0246dcd)",
+        "PublicSubnetID": {
+            "Description": "ID of the public subnet 1 that you want to provision the first bastion into (e.g., subnet-a0246dcd)",
             "Type": "AWS::EC2::Subnet::Id"
         },
         "RemoteAccessCIDR": {
@@ -384,6 +384,12 @@
                 "Path": "/"
             }
         },
+        "EIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
         "BastionAutoScalingGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
@@ -392,7 +398,7 @@
                 },
                 "VPCZoneIdentifier": [
                     {
-                        "Ref": "PrivateSubnetID"
+                        "Ref": "PublicSubnetID"
                     }
                 ],
                 "MinSize": "1",
@@ -558,6 +564,11 @@
                                 "sudo yum update\n",
                                 "sudo yum install python-pip git libffi-dev libssl-dev -y\n",
                                 "sudo pip install pywinrm\n",
+                                "EIP_LIST=\"",
+                                {
+                                    "Ref": "EIP"
+                                },
+                                "\"\n",
                                 "CLOUDWATCHGROUP=",
                                 {
                                     "Ref": "BastionMainLogGroup"
@@ -624,6 +635,17 @@
             "Export": {
                 "Name": {
                     "Fn::Sub": "${AWS::StackName}-BastionAutoScalingGroup"
+                }
+            }
+        },
+        "EIP": {
+            "Description": "Elastic IP for Bastion",
+            "Value": {
+                "Ref": "EIP"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-EIP"
                 }
             }
         },

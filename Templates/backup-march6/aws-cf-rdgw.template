@@ -10,7 +10,7 @@
                     },
                     "Parameters": [
                         "VPCID",
-                        "PrivateSubnetID",
+                        "PublicSubnetID",
                         "RDGWCIDR"
                     ]
                 },
@@ -47,8 +47,8 @@
                 "KeyPairName": {
                     "default": "Key Pair Name"
                 },
-                "PrivateSubnetID": {
-                    "default": "Private Subnet ID"
+                "PublicSubnetID": {
+                    "default": "Public Subnet ID"
                 },
                 "RDGWInstanceType": {
                     "default": "Remote Desktop Gateway Instance Type"
@@ -92,8 +92,8 @@
             "Description": "Public/private key pairs allow you to securely connect to your instance after it launches",
             "Type": "AWS::EC2::KeyPair::KeyName"
         },
-        "PrivateSubnetID": {
-            "Description": "ID of the private subnet that you want to provision the Remote Desktop Gateway into",
+        "PublicSubnetID": {
+            "Description": "ID of the public subnet that you want to provision the Remote Desktop Gateway into",
             "Type": "AWS::EC2::Subnet::Id"
         },
         "RDGWInstanceType": {
@@ -157,6 +157,12 @@
 
     },
     "Resources": {
+        "EIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
         "RDGWHostRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -218,7 +224,7 @@
                 },
                 "VPCZoneIdentifier": [
                     {
-                        "Ref": "PrivateSubnetID"
+                        "Ref": "PublicSubnetID"
                     }
                 ],
                 "MinSize": "1",
@@ -304,6 +310,9 @@
                             },
                             "c:\\cfn\\scripts\\Initialize-RDGW.ps1": {
                                 "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/Initialize-RDGW.ps1"
+                            },
+                            "c:\\cfn\\scripts\\Set-EIP.ps1": {
+                                "source": "https://raw.githubusercontent.com/iwasalive/ADLP/master/Modules/Set-EIP.ps1"
                             }
                         },
                         "services": {
@@ -407,6 +416,22 @@
                                                 "Ref": "DomainDNSName"
                                             },
                                             "') -DomainNetBiosName BUILTIN -GroupName administrators"
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            },
+                            "e-assign-eip": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -ExecutionPolicy RemoteSigned ",
+                                            "C:\\cfn\\scripts\\Set-EIP.ps1 -EIPs @('",
+                                            {
+                                                "Ref": "EIP"
+                                            },
+                                            "')"
                                         ]
                                     ]
                                 },
@@ -522,6 +547,12 @@
         }
     },
     "Outputs": {
+        "EIP": {
+            "Description": "Elastic IP for RDGW",
+            "Value": {
+                "Ref": "EIP"
+            }
+        },
         "RemoteDesktopGatewaySGID": {
             "Value": {
                 "Ref": "RemoteDesktopGatewaySG"
