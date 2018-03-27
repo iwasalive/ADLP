@@ -272,34 +272,37 @@
                       "files": {
                           "/opt/easy-rsa/openvpn_client.conf": {
                             "content": {
-                              "Fn:Join": [
-                                "client\n",
-                                "dev tun\n",
-                                "proto udp\n",
-                                "remote \n",
-                                {
-                                  "Ref": "myEIP"
-                                },
-                                {
-                                  "Ref": "OpenVPNPort"
-                                },
-                                "ca ca.crt\n",
-                                "cert clientuser.crt\n",
-                                "key clientuser.key\n",
-                                "tls-client\n",
-                                "tls-auth statictlssecret.key 1\n",
-                                "tls-version-min 1.2\n",
-                                "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
-                                "cipher AES-256-CBC\n",
-                                "auth SHA512\n",
-                                "resolv-retry infinite\n",
-                                "auth-retry none\n",
-                                "nobind\n",
-                                "persist-key\n",
-                                "persist-tun\n",
-                                "ns-cert-type server\n",
-                                "comp-lzo\n",
-                                "verb 3"
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "client\n",
+                                  "dev tun\n",
+                                  "proto udp\n",
+                                  "remote \n",
+                                  {
+                                    "Ref": "myEIP"
+                                  },
+                                  {
+                                    "Ref": "OpenVPNPort"
+                                  },
+                                  "ca ca.crt\n",
+                                  "cert clientuser.crt\n",
+                                  "key clientuser.key\n",
+                                  "tls-client\n",
+                                  "tls-auth statictlssecret.key 1\n",
+                                  "tls-version-min 1.2\n",
+                                  "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
+                                  "cipher AES-256-CBC\n",
+                                  "auth SHA512\n",
+                                  "resolv-retry infinite\n",
+                                  "auth-retry none\n",
+                                  "nobind\n",
+                                  "persist-key\n",
+                                  "persist-tun\n",
+                                  "ns-cert-type server\n",
+                                  "comp-lzo\n",
+                                  "verb 3"
+                                ]
                               ]
                             },
                             "mode": "000700",
@@ -308,18 +311,21 @@
                         },
                         "/opt/easy-rsa/gen_ovpn_profile.sh": {
                             "content": {
-                              "Fn:Join": [
-                                "(cat /opt/easy-rsa/openvpn_client.conf\n",
-                                "echo '<key>'\n",
-                                "cat keys/clientuser.key\n",
-                                "echo '</key>'\n",
-                                "echo '<cert>'\n",
-                                "cat keys/clientuser.crt\n",
-                                "echo '</cert>'\n",
-                                "echo '<ca>'\n",
-                                "cat keys/ca.crt\n",
-                                "echo '</ca>'\n",
-                                ") > /opt/easy-rsa/keys/openvpn_clientuser.ovpn"
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "(cat /opt/easy-rsa/openvpn_client.conf\n",
+                                  "echo '<key>'\n",
+                                  "cat keys/clientuser.key\n",
+                                  "echo '</key>'\n",
+                                  "echo '<cert>'\n",
+                                  "cat keys/clientuser.crt\n",
+                                  "echo '</cert>'\n",
+                                  "echo '<ca>'\n",
+                                  "cat keys/ca.crt\n",
+                                  "echo '</ca>'\n",
+                                  ") > /opt/easy-rsa/keys/openvpn_clientuser.ovpn"
+                                ]
                               ]
                             },
                             "mode": "000700",
@@ -351,36 +357,38 @@
                           "content": {
                             "Fn::Join": [
                               "",
-                              "port ",
-                              {
-                                "Ref": "OpenVPNPort"
-                              },
-                              "proto udp\n",
-                              "dev tun\n",
-                              "server 172.16.0.0 255.255.252.0\n",
-                              "push \"redirect-gateway def1\"\n",
-                              "ca /opt/easy-rsa/keys/ca.crt\n",
-                              "cert /opt/easy-rsa/keys/server.crt\n",
-                              "key /opt/easy-rsa/keys/server.key\n",
-                              "dh /opt/easy-rsa/keys/dh2048.pem\n",
-                              "tls-server\n",
-                              "tls-auth /opt/easy-rsa/keys/statictlssecret.key 0\n",
-                              "tls-version-min 1.2\n",
-                              "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
-                              "cipher AES-256-CBC\n",
-                              "auth SHA512\n",
-                              "ifconfig-pool-persist ipp.txt\n",
-                              "keepalive 10 120\n",
-                              "ping-timer-rem\n",
-                              "comp-lzo\n",
-                              "persist-key\n",
-                              "persist-tun\n",
-                              "status openvpn-status.log\n",
-                              "log-append /var/log/openvpn.log\n",
-                              "verb 3\n",
-                              "max-clients 100\n",
-                              "user nobody\n",
-                              "group nobody"
+                              [
+                                "port ",
+                                {
+                                  "Ref": "OpenVPNPort"
+                                },
+                                "proto udp\n",
+                                "dev tun\n",
+                                "server 172.16.0.0 255.255.252.0\n",
+                                "push \"redirect-gateway def1\"\n",
+                                "ca /opt/easy-rsa/keys/ca.crt\n",
+                                "cert /opt/easy-rsa/keys/server.crt\n",
+                                "key /opt/easy-rsa/keys/server.key\n",
+                                "dh /opt/easy-rsa/keys/dh2048.pem\n",
+                                "tls-server\n",
+                                "tls-auth /opt/easy-rsa/keys/statictlssecret.key 0\n",
+                                "tls-version-min 1.2\n",
+                                "tls-cipher TLS-ECDHE-RSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-ECDSA-WITH-AES-128-GCM-SHA256:TLS-ECDHE-RSA-WITH-AES-256-GCM-SHA384:TLS-DHE-RSA-WITH-AES-256-CBC-SHA256\n",
+                                "cipher AES-256-CBC\n",
+                                "auth SHA512\n",
+                                "ifconfig-pool-persist ipp.txt\n",
+                                "keepalive 10 120\n",
+                                "ping-timer-rem\n",
+                                "comp-lzo\n",
+                                "persist-key\n",
+                                "persist-tun\n",
+                                "status openvpn-status.log\n",
+                                "log-append /var/log/openvpn.log\n",
+                                "verb 3\n",
+                                "max-clients 100\n",
+                                "user nobody\n",
+                                "group nobody"
+                              ]
                             ]
                           },
                           "mode": "000644",
@@ -415,13 +423,15 @@
                         "02_upload_files_s3cp_openVPNClientFiles": {
                           "cwd": "/opt/easy-rsa/keys",
                           "command": {
-                            "Fn:Join": [
+                            "Fn::Join": [
                               "",
-                              "aws s3 cp openVPNClientFiles.zip s3://",
-                              {
-                                "Ref": "myS3Bucket"
-                              },
-                              "/client/openVPNClientFiles.zip"
+                              [
+                                "aws s3 cp openVPNClientFiles.zip s3://",
+                                {
+                                  "Ref": "myS3Bucket"
+                                },
+                                "/client/openVPNClientFiles.zip"
+                              ]
                             ]
                           }
                         },
@@ -429,13 +439,15 @@
                           "cwd": "/var/log",
                           "test": "test -e /var/log/cfn-init.log",
                           "command": {
-                            "Fn:Join": [
+                            "Fn::Join": [
                               "",
-                              "aws s3 cp /var/log/cfn-init.log s3://",
-                              {
-                                "Ref": "myS3Bucket"
-                              },
-                              "/log/genSecrets_cfn-init.log"
+                              [
+                                "aws s3 cp /var/log/cfn-init.log s3://",
+                                {
+                                  "Ref": "myS3Bucket"
+                                },
+                                "/log/genSecrets_cfn-init.log"
+                              ]
                             ]
                           }
                         }
@@ -456,11 +468,11 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "./tmp/openVPNConfig.sh",
-                                            " --eBAutoScalingGroup ",
-                                            {
-                                                "Ref": "eBASGroupID"
-                                            }
+                                          "./tmp/openVPNConfig.sh",
+                                          " --eBAutoScalingGroup ",
+                                          {
+                                              "Ref": "eBASGroupID"
+                                          }
                                         ]
                                     ]
                                 }
